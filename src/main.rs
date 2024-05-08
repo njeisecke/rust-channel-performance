@@ -12,7 +12,7 @@ fn bench(name: &str, f: fn()) {
     println!("{} {:?}", name, start.elapsed() / (RUN_COUNT as u32));
 }
 
-fn test_foo() {
+fn test_std() {
     let (tx, rx) = std::sync::mpsc::sync_channel(5);
 
     let handle = std::thread::spawn(move || {
@@ -33,6 +33,28 @@ fn test_foo() {
     println!("sum {}", sum);
 }
 
+fn test_crossbeam() {
+    let (tx, rx) = crossbeam::channel::bounded(5);
+
+    let handle = std::thread::spawn(move || {
+        let mut acc: i64 = 0;
+        while let Ok(value) = rx.recv() {
+            acc += value;
+        }
+        acc
+    });
+
+    for v in 0..100_000 {
+        tx.send(v).unwrap();
+    }
+    drop(tx);
+
+    let sum = handle.join().unwrap();
+
+    println!("sum {}", sum);
+}
+
 fn main() {
-    bench("foo", test_foo);
+    bench("std", test_std);
+    bench("crossbeam", test_crossbeam);
 }
