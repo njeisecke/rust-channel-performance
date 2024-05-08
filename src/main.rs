@@ -1,5 +1,7 @@
 use std::time::Instant;
 
+const CAPACITY: usize = 5;
+
 fn bench(name: &str, f: fn()) {
     const RUN_COUNT: usize = 30;
 
@@ -13,7 +15,7 @@ fn bench(name: &str, f: fn()) {
 }
 
 fn test_std() {
-    let (tx, rx) = std::sync::mpsc::sync_channel(5);
+    let (tx, rx) = std::sync::mpsc::sync_channel(CAPACITY);
 
     let handle = std::thread::spawn(move || {
         let mut acc: i64 = 0;
@@ -34,7 +36,7 @@ fn test_std() {
 }
 
 fn test_crossbeam() {
-    let (tx, rx) = crossbeam::channel::bounded(5);
+    let (tx, rx) = crossbeam::channel::bounded(CAPACITY);
 
     let handle = std::thread::spawn(move || {
         let mut acc: i64 = 0;
